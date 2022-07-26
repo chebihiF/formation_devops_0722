@@ -1,0 +1,39 @@
+version: "3"
+services:
+  vote:
+    image: fhcebihi/vote
+    ports:
+      - "5000:80"
+    deploy:
+      replicas: 5
+    depends_on:
+      - redis
+  result:
+    image: fhcebihi/result
+    ports:
+      - "5001:80"
+      - "5858:5858"
+    deploy:
+      replicas: 2
+    depends_on:
+      - db
+  worker:
+    image: fhcebihi/worker
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - "node.role == manager"
+    depends_on:
+      - redis
+      - db
+  redis:
+    image: redis:alpine
+    ports: ["6379"]
+  db:
+    image: postgres:9.4
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+    deploy:
+      replicas: 2
